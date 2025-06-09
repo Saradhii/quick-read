@@ -1,5 +1,5 @@
 // IMPORTANT: REPLACE 'YOUR_API_KEY' WITH YOUR ACTUAL GEMINI API KEY
-const GEMINI_API_KEY = 'YOUR_API_KEY_GOES_HERE'; // Or your actual key if already set by user
+const GEMINI_API_KEY = 'AIzaSyBoWVLiSCXKk69y6LbmN1UvY0suBI1l2Tg'; // Or your actual key if already set by user
 const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'; // Base URL
 
 async function summarizeWithGemini(text, lengthPreference = 'short') { // Added lengthPreference
