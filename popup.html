@@ -1,50 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Web Page Summarizer</title>
+  <title>Quick Read Extension</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      width: 350px; /* Slightly wider */
-      padding: 15px;
-      background-color: #f4f7f9; /* Light background color */
-      color: #333; /* Darker text for better contrast */
+      width: 350px;
+      padding: 0; /* Remove padding to allow border animation on edge */
+      background-color: #f4f7f9;
+      color: #333;
       margin: 0;
+      position: relative; /* For pseudo-element positioning if needed */
+      overflow: hidden; /* Important if pseudo-elements go outside */
     }
+
+    /* Animated Border Effect */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1; /* Place it behind the content */
+      animation: animatedBorderBeam 8s linear infinite;
+      background-image: linear-gradient(120deg, #84fab0, #8fd3f4, #a18cd1, #fbc2eb, #84fab0); /* Example gradient */
+      background-size: 300% 300%; /* Make gradient larger than element to allow smooth animation */
+      pointer-events: none; /* Make sure it doesn't interfere with clicks */
+    }
+
+    @keyframes animatedBorderBeam {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Container for actual content, to sit above the animated border */
+    .content-wrapper {
+        padding: 20px; /* Original body padding */
+        background-color: #f4f7f9; /* Match body background to cover the ::before element's center */
+        position: relative; /* Ensure it's above the ::before */
+        z-index: 1;
+        height: 100%; /* Ensure it covers the ::before */
+        box-sizing: border-box;
+    }
+
+
     h3 {
-      color: #0056b3; /* A nice blue for the heading */
+      color: #0056b3;
       text-align: center;
       margin-top: 0;
-      margin-bottom: 15px;
+      margin-bottom: 20px; /* Increased margin */
     }
-    #controls { /* New div to group button and dropdown */
+    #controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px; /* Increased margin */
     }
     button#summarizeButton {
-      background-color: #007bff; /* Bootstrap primary blue */
+      /* Gradient Button */
+      background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%);
+      background-size: 200% auto; /* For potential hover animation */
       color: white;
       border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
+      padding: 12px 18px; /* Slightly larger padding */
+      border-radius: 6px; /* Slightly more rounded */
       cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.2s ease-in-out;
+      font-size: 15px; /* Slightly larger font */
+      transition: background-position 0.3s ease-in-out, box-shadow 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     button#summarizeButton:hover {
-      background-color: #0056b3; /* Darker blue on hover */
+      background-position: right center; /* Change gradient direction on hover */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
-    button#summarizeButton:disabled { /* Style for disabled button */
+    button#summarizeButton:disabled {
+      background-image: none; /* Remove gradient when disabled */
       background-color: #cccccc;
       cursor: not-allowed;
+      box-shadow: none;
     }
-    select#summaryLength { /* Styling for the dropdown */
-      padding: 8px;
-      border-radius: 5px;
+    select#summaryLength {
+      padding: 10px; /* Increased padding */
+      border-radius: 6px;
       border: 1px solid #ced4da;
-      font-size: 14px;
+      font-size: 15px;
       background-color: white;
     }
     #loader {
@@ -53,30 +92,30 @@
       text-align: center;
       font-style: italic;
       color: #555;
-      background-color: #e9ecef; /* Light grey for loader background */
+      background-color: #e9ecef;
       border-radius: 5px;
-      margin-bottom: 15px; /* Added margin */
+      margin-bottom: 20px;
     }
     #summary {
       margin-top: 10px;
-      border: 1px solid #dee2e6; /* Lighter border */
-      padding: 10px;
-      min-height: 70px; /* Slightly more min-height */
-      background-color: #ffffff; /* White background for summary */
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+      border: 1px solid #dee2e6;
+      padding: 12px; /* Increased padding */
+      min-height: 75px;
+      background-color: #ffffff;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    #summary p:first-child { /* Remove margin if it's just the placeholder */
+    #summary p:first-child {
         margin-top: 0;
     }
     #summary ul {
       padding-left: 20px;
-      margin-top: 0; /* Remove default ul margin */
-      margin-bottom: 0; /* Remove default ul margin */
+      margin-top: 0;
+      margin-bottom: 0;
     }
     #summary li {
-      margin-bottom: 8px; /* Space out bullet points */
-      line-height: 1.4; /* Improve readability */
+      margin-bottom: 10px; /* Increased space */
+      line-height: 1.5; /* Improved readability */
     }
     #summary li:last-child {
       margin-bottom: 0;
@@ -84,22 +123,23 @@
   </style>
 </head>
 <body>
-  <h3>Web Page Summarizer</h3>
+  <!-- Wrap content to sit above the animated border -->
+  <div class="content-wrapper">
+    <h3>Quick Read</h3>
 
-  <!-- Dropdown will be added in the next step, but CSS is ready -->
-  <!-- For now, just the button to ensure styles apply -->
-  <div id="controls">
-    <select id="summaryLength"> <!-- Removed style="display: none;" -->
-      <option value="short" selected>Short (~2-3 points)</option> <!-- Added 'selected' and more descriptive text -->
-      <option value="medium">Medium (~4-5 points)</option>
-    </select>
-    <button id="summarizeButton">Summarize Page</button>
-  </div>
+    <div id="controls">
+      <select id="summaryLength">
+        <option value="short" selected>Concise Summary</option>
+        <option value="medium">Detailed Summary</option>
+      </select>
+      <button id="summarizeButton">Summarize Page</button>
+    </div>
 
-  <div id="loader">Summarizing with AI...</div>
+    <div id="loader">Summarizing with AI...</div>
 
-  <div id="summary">
-    <p>Select summary length and click the button to summarize.</p>
+    <div id="summary">
+      <p>Select summary length and click the button to summarize.</p>
+    </div>
   </div>
 
   <script src="popup.js"></script>

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Web Page Summarizer",
+  "name": "Quick Read",
   "version": "1.0",
   "description": "Summarizes the content of the current web page into bullet points using AI.",
   "permissions": [
