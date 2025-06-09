@@ -1,71 +1,88 @@
 // IMPORTANT: REPLACE 'YOUR_API_KEY' WITH YOUR ACTUAL GEMINI API KEY
-const GEMINI_API_KEY = 'AIzaSyBoWVLiSCXKk69y6LbmN1UvY0suBI1l2Tg'; // Or your actual key if already set by user
-const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'; // Base URL
+const GEMINI_API_KEY = 'YOUR_API_KEY_GOES_HERE'; // Or your actual key if already set by user
+const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
-async function summarizeWithGemini(text, lengthPreference = 'short') { // Added lengthPreference
-  const apiKey = GEMINI_API_KEY; // Use a local const for clarity within function
+// Updated function signature to accept pageDetails object
+async function summarizeWithGemini(pageDetails, lengthPreference = 'short') {
+  const apiKey = GEMINI_API_KEY;
   if (!apiKey || apiKey === 'YOUR_API_KEY_GOES_HERE') {
     return { error: "API Key not provided. Please add it to background.js" };
   }
 
-  if (!text || text.trim().length === 0) {
-    return { summary: ["No content provided to summarize."] };
+  const { articleText, pageTitle, siteName, pageDescription } = pageDetails;
+
+  if (!articleText || articleText.trim().length === 0) {
+    return { summary: "No content provided to summarize." }; // Return as plain text, popup will handle if it's an error
   }
 
-  const maxInputLength = 15000;
-  if (text.length > maxInputLength) {
-    text = text.substring(0, maxInputLength);
+  // Truncate articleText if it's too long to avoid exceeding API limits
+  // Combined length of context and article text should be considered.
+  // Let's be very conservative with articleText length for now.
+  const maxArticleLength = 12000; // Characters for article text
+  let truncatedArticleText = articleText;
+  if (articleText.length > maxArticleLength) {
+    truncatedArticleText = articleText.substring(0, maxArticleLength) + "... (truncated)";
   }
 
-  let promptSummaryLength = "approximately 2-3 concise bullet points"; // Default to short
+  let promptSummaryLengthDetails = "a concise summary with 2-3 main points";
   if (lengthPreference === 'medium') {
-    promptSummaryLength = "approximately 4-5 concise bullet points";
+    promptSummaryLengthDetails = "a slightly more detailed summary with 4-5 main points";
   }
 
-  const prompt = `Summarize the following web page content into ${promptSummaryLength}. Focus on the main topics and key takeaways:
+  // Constructing a more contextual prompt
+  let prompt = `Given the following context about a web page:
+Site Name: ${siteName || 'Not available'}
+Page Title: ${pageTitle || 'Not available'}
+Page Description: ${pageDescription || 'Not available (if any)'}
 
-${text}`;
+Please summarize the main content of the page, provided below, into ${promptSummaryLengthDetails}.
+Format the summary using Markdown (e.g., headings, bold text for emphasis, lists).
+Ensure the output is only the Markdown summary.
+
+Web Page Content:
+---
+${truncatedArticleText}
+---
+`;
+
   const fullApiUrl = `${GEMINI_API_URL_BASE}?key=${apiKey}`;
 
-
   try {
-    const response = await fetch(fullApiUrl, { // Use fullApiUrl
+    const response = await fetch(fullApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }] // Use the dynamically constructed prompt
-        }],
+        contents: [{ parts: [{ text: prompt }] }],
+        // Consider generationConfig for more control if needed, e.g. candidate_count: 1
+        generationConfig: {
+          // temperature: 0.7, // Example
+          // candidateCount: 1 // Often good to set to 1 for direct summarization
+        }
       }),
     });
-    // ... (rest of the try block remains largely the same, handling response and errors)
-    // ... make sure any console.error or error messages are clear
+
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: { message: "Could not parse error JSON."} })); // Catch if errorBody itself is not JSON
+      const errorBody = await response.json().catch(() => ({ error: { message: "Could not parse error JSON."} }));
       console.error('Gemini API Error:', errorBody);
-      return { error: `Gemini API request failed: ${response.status} ${response.statusText}. Details: ${errorBody?.error?.message || 'No specific error message.'}` };
+      // Send back the raw error message, popup.js will display it.
+      return { error: `Gemini API request failed: ${response.status} ${response.statusText}. ${errorBody?.error?.message || 'Details unavailable.'}` };
     }
 
     const data = await response.json();
 
     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-      const summaryText = data.candidates[0].content.parts[0].text;
-      let summaryPoints = summaryText.split(/\n\s*[-*•–—]\s+|\n\s*\d+\.\s+/).filter(pt => pt.trim().length > 0);
-      if (summaryPoints.length === 1 && summaryText.includes('\n')) {
-          summaryPoints = summaryText.split('\n').filter(pt => pt.trim().length > 0);
-      }
-      if (summaryPoints.length === 0 && summaryText.length > 0) {
-          summaryPoints = [summaryText];
-      }
-      return { summary: summaryPoints.map(pt => pt.trim()) };
+      const summaryMarkdown = data.candidates[0].content.parts[0].text;
+      // The response is now expected to be Markdown.
+      // No need to split into bullet points here; popup.js will render the Markdown.
+      return { summary: summaryMarkdown.trim() }; // Send as a single Markdown string
     } else {
       console.error('Gemini API: No content in response', data);
       if (data.promptFeedback && data.promptFeedback.blockReason) {
-        return { error: `Content blocked by Gemini API due to: ${data.promptFeedback.blockReason}. ${data.promptFeedback.safetyRatings ? JSON.stringify(data.promptFeedback.safetyRatings) : ''}` };
+         return { error: `Content blocked by Gemini API: ${data.promptFeedback.blockReason}. ${data.promptFeedback.safetyRatings ? JSON.stringify(data.promptFeedback.safetyRatings) : ''}` };
       }
-      return { error: "Could not extract summary from Gemini API response." };
+      return { error: "Could not extract summary from Gemini API response. The response might be empty or malformed." };
     }
 
   } catch (error) {
@@ -81,30 +98,35 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       return true;
     }
 
+    // Updated files array for executeScript
     chrome.scripting.executeScript({
       target: { tabId: request.tabId },
-      files: ['content_script.js']
+      files: ['lib/Readability.js', 'content_script.js'] // Ensure Readability.js is injected first
     }, (injectionResults) => {
       if (chrome.runtime.lastError || !injectionResults || injectionResults.length === 0) {
-        sendResponse({ error: "Failed to inject content script. " + (chrome.runtime.lastError ? chrome.runtime.lastError.message : "No results returned.") });
+        sendResponse({ error: "Failed to inject content script(s). " + (chrome.runtime.lastError ? chrome.runtime.lastError.message : "No results returned.") });
         return;
       }
 
+      // Message to content script is the same
       chrome.tabs.sendMessage(request.tabId, { action: "getPageContent" }, function(contentResponse) {
         if (chrome.runtime.lastError) {
           sendResponse({ error: "Error getting content from page: " + chrome.runtime.lastError.message });
           return;
         }
-        if (contentResponse && contentResponse.data) {
-          summarizeWithGemini(contentResponse.data, request.lengthPreference).then(summaryResult => { // Pass lengthPreference
+
+        // contentResponse is now an object: { articleText, pageTitle, siteName, pageDescription } or { error }
+        if (contentResponse && contentResponse.articleText) {
+          // Pass the whole contentResponse object (which is pageDetails) and lengthPreference
+          summarizeWithGemini(contentResponse, request.lengthPreference).then(summaryResult => {
             sendResponse(summaryResult);
           }).catch(error => {
             sendResponse({ error: `Unexpected error during summarization: ${error.message}` });
           });
         } else if (contentResponse && contentResponse.error) {
-          sendResponse({ error: contentResponse.error });
+          sendResponse({ error: contentResponse.error }); // Forward error from content_script
         } else {
-          sendResponse({ error: "No content received from content script." });
+          sendResponse({ error: "No valid content or data received from content script." });
         }
       });
     });
