@@ -4,35 +4,104 @@
   <title>Web Page Summarizer</title>
   <style>
     body {
-      font-family: sans-serif;
-      width: 300px;
-      padding: 10px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      width: 350px; /* Slightly wider */
+      padding: 15px;
+      background-color: #f4f7f9; /* Light background color */
+      color: #333; /* Darker text for better contrast */
+      margin: 0;
+    }
+    h3 {
+      color: #0056b3; /* A nice blue for the heading */
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    #controls { /* New div to group button and dropdown */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    button#summarizeButton {
+      background-color: #007bff; /* Bootstrap primary blue */
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease-in-out;
+    }
+    button#summarizeButton:hover {
+      background-color: #0056b3; /* Darker blue on hover */
+    }
+    button#summarizeButton:disabled { /* Style for disabled button */
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    select#summaryLength { /* Styling for the dropdown */
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ced4da;
+      font-size: 14px;
+      background-color: white;
     }
     #loader {
-      display: none; /* Hidden by default */
-      padding: 10px;
+      display: none;
+      padding: 15px;
       text-align: center;
       font-style: italic;
       color: #555;
+      background-color: #e9ecef; /* Light grey for loader background */
+      border-radius: 5px;
+      margin-bottom: 15px; /* Added margin */
     }
     #summary {
       margin-top: 10px;
-      border: 1px solid #ccc;
-      padding: 5px;
-      min-height: 50px;
+      border: 1px solid #dee2e6; /* Lighter border */
+      padding: 10px;
+      min-height: 70px; /* Slightly more min-height */
+      background-color: #ffffff; /* White background for summary */
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
     }
-    ul {
+    #summary p:first-child { /* Remove margin if it's just the placeholder */
+        margin-top: 0;
+    }
+    #summary ul {
       padding-left: 20px;
+      margin-top: 0; /* Remove default ul margin */
+      margin-bottom: 0; /* Remove default ul margin */
+    }
+    #summary li {
+      margin-bottom: 8px; /* Space out bullet points */
+      line-height: 1.4; /* Improve readability */
+    }
+    #summary li:last-child {
+      margin-bottom: 0;
     }
   </style>
 </head>
 <body>
   <h3>Web Page Summarizer</h3>
-  <button id="summarizeButton">Summarize Page</button>
-  <div id="loader">Summarizing with AI...</div>
-  <div id="summary">
-    <p>Click the button to summarize the current page.</p>
+
+  <!-- Dropdown will be added in the next step, but CSS is ready -->
+  <!-- For now, just the button to ensure styles apply -->
+  <div id="controls">
+    <select id="summaryLength"> <!-- Removed style="display: none;" -->
+      <option value="short" selected>Short (~2-3 points)</option> <!-- Added 'selected' and more descriptive text -->
+      <option value="medium">Medium (~4-5 points)</option>
+    </select>
+    <button id="summarizeButton">Summarize Page</button>
   </div>
+
+  <div id="loader">Summarizing with AI...</div>
+
+  <div id="summary">
+    <p>Select summary length and click the button to summarize.</p>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

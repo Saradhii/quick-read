@@ -1,33 +1,48 @@
 document.addEventListener('DOMContentLoaded', function() {
   const summarizeButton = document.getElementById('summarizeButton');
   const summaryDiv = document.getElementById('summary');
-  const loaderDiv = document.getElementById('loader'); // Get loader element
+  const loaderDiv = document.getElementById('loader');
+  const summaryLengthSelect = document.getElementById('summaryLength'); // Get dropdown element
 
   summarizeButton.addEventListener('click', function() {
-    summaryDiv.innerHTML = ''; // Clear previous summary/error
-    loaderDiv.style.display = 'block'; // Show loader
-    summaryDiv.style.display = 'none'; // Hide summary area while loading
+    summaryDiv.innerHTML = '';
+    loaderDiv.style.display = 'block';
+    summaryDiv.style.display = 'none';
+    summarizeButton.disabled = true; // Disable button
+    summaryLengthSelect.disabled = true; // Disable dropdown
+
+    const selectedLength = summaryLengthSelect.value; // Get selected length
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs.length === 0) {
-        loaderDiv.style.display = 'none'; // Hide loader
-        summaryDiv.style.display = 'block'; // Show summary area
+        loaderDiv.style.display = 'none';
+        summaryDiv.style.display = 'block';
         summaryDiv.innerHTML = '<p>Error: No active tab found.</p>';
+        summarizeButton.disabled = false; // Re-enable button
+        summaryLengthSelect.disabled = false; // Re-enable dropdown
         return;
       }
       const activeTab = tabs[0];
       if (!activeTab.id) {
-          loaderDiv.style.display = 'none'; // Hide loader
-          summaryDiv.style.display = 'block'; // Show summary area
+          loaderDiv.style.display = 'none';
+          summaryDiv.style.display = 'block';
           summaryDiv.innerHTML = '<p>Error: Active tab has no ID.</p>';
+          summarizeButton.disabled = false; // Re-enable button
+          summaryLengthSelect.disabled = false; // Re-enable dropdown
           return;
       }
 
       chrome.runtime.sendMessage(
-        { action: "summarizePage", tabId: activeTab.id },
+        {
+          action: "summarizePage",
+          tabId: activeTab.id,
+          lengthPreference: selectedLength // Send length preference
+        },
         function(response) {
-          loaderDiv.style.display = 'none'; // Hide loader
-          summaryDiv.style.display = 'block'; // Show summary area
+          loaderDiv.style.display = 'none';
+          summaryDiv.style.display = 'block';
+          summarizeButton.disabled = false; // Re-enable button
+          summaryLengthSelect.disabled = false; // Re-enable dropdown
 
           if (chrome.runtime.lastError) {
             summaryDiv.innerHTML = '<p>Error: ' + chrome.runtime.lastError.message + '</p>';
