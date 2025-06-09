@@ -3,127 +3,310 @@
 <head>
   <title>Quick Read Extension</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      width: 350px;
-      padding: 0; /* Remove padding to allow border animation on edge */
-      background-color: #f4f7f9;
-      color: #333;
-      margin: 0;
-      position: relative; /* For pseudo-element positioning if needed */
-      overflow: hidden; /* Important if pseudo-elements go outside */
+    * {
+      box-sizing: border-box;
     }
 
-    /* Animated Border Effect */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      width: 380px;
+      padding: 0;
+      margin: 0;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 400px;
+    }
+
+    /* Magical Beaming Border Animation */
     body::before {
       content: '';
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: -1; /* Place it behind the content */
-      animation: animatedBorderBeam 8s linear infinite;
-      background-image: linear-gradient(120deg, #84fab0, #8fd3f4, #a18cd1, #fbc2eb, #84fab0); /* Example gradient */
-      background-size: 300% 300%; /* Make gradient larger than element to allow smooth animation */
-      pointer-events: none; /* Make sure it doesn't interfere with clicks */
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      z-index: -1;
+      background: linear-gradient(
+        45deg,
+        #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd
+      );
+      background-size: 400% 400%;
+      animation: magicalBeam 4s ease-in-out infinite;
+      border-radius: 16px;
+      filter: blur(1px);
     }
 
-    @keyframes animatedBorderBeam {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    /* Secondary glow effect */
+    body::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      z-index: -2;
+      background: linear-gradient(
+        -45deg,
+        #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd
+      );
+      background-size: 400% 400%;
+      animation: magicalBeam 4s ease-in-out infinite reverse;
+      border-radius: 18px;
+      filter: blur(3px);
+      opacity: 0.7;
     }
 
-    /* Container for actual content, to sit above the animated border */
+    @keyframes magicalBeam {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      25% {
+        background-position: 100% 0%;
+      }
+      50% {
+        background-position: 100% 100%;
+      }
+      75% {
+        background-position: 0% 100%;
+      }
+    }
+
+    /* Content wrapper with glassmorphism effect */
     .content-wrapper {
-        padding: 20px; /* Original body padding */
-        background-color: #f4f7f9; /* Match body background to cover the ::before element's center */
-        position: relative; /* Ensure it's above the ::before */
-        z-index: 1;
-        height: 100%; /* Ensure it covers the ::before */
-        box-sizing: border-box;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 14px;
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
-
 
     h3 {
-      color: #0056b3;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       text-align: center;
-      margin-top: 0;
-      margin-bottom: 20px; /* Increased margin */
+      margin: 0 0 24px 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
     }
+
     #controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px; /* Increased margin */
+      margin-bottom: 24px;
+      gap: 16px;
     }
+
+    /* Modern gradient button with hover effects */
     button#summarizeButton {
-      /* Gradient Button */
-      background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%);
-      background-size: 200% auto; /* For potential hover animation */
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+      background-size: 200% 200%;
       color: white;
       border: none;
-      padding: 12px 18px; /* Slightly larger padding */
-      border-radius: 6px; /* Slightly more rounded */
+      padding: 14px 20px;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 15px; /* Slightly larger font */
-      transition: background-position 0.3s ease-in-out, box-shadow 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        0 4px 15px rgba(102, 126, 234, 0.4),
+        0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+
+    /* Button shine effect */
+    button#summarizeButton::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      transition: left 0.5s;
+    }
+
     button#summarizeButton:hover {
-      background-position: right center; /* Change gradient direction on hover */
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 25px rgba(102, 126, 234, 0.6),
+        0 4px 8px rgba(0, 0, 0, 0.15);
     }
+
+    button#summarizeButton:hover::before {
+      left: 100%;
+    }
+
+    button#summarizeButton:active {
+      transform: translateY(0);
+    }
+
     button#summarizeButton:disabled {
-      background-image: none; /* Remove gradient when disabled */
-      background-color: #cccccc;
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
       cursor: not-allowed;
-      box-shadow: none;
+      transform: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: #a0aec0;
     }
+
+    button#summarizeButton:disabled::before {
+      display: none;
+    }
+
+    /* Modern select dropdown */
     select#summaryLength {
-      padding: 10px; /* Increased padding */
-      border-radius: 6px;
-      border: 1px solid #ced4da;
-      font-size: 15px;
-      background-color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      color: #4a5568;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      min-width: 160px;
     }
+
+    select#summaryLength:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    select#summaryLength:hover {
+      border-color: rgba(102, 126, 234, 0.4);
+    }
+
+    /* Animated loader with gradient */
     #loader {
       display: none;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
       font-style: italic;
-      color: #555;
-      background-color: #e9ecef;
-      border-radius: 5px;
+      color: #667eea;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border-radius: 12px;
       margin-bottom: 20px;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      position: relative;
+      overflow: hidden;
     }
+
+    /* Loader animation */
+    #loader::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(102, 126, 234, 0.2),
+        transparent
+      );
+      animation: loaderShine 2s infinite;
+    }
+
+    @keyframes loaderShine {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Modern summary container */
     #summary {
-      margin-top: 10px;
-      border: 1px solid #dee2e6;
-      padding: 12px; /* Increased padding */
-      min-height: 75px;
-      background-color: #ffffff;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-top: 16px;
+      border: 2px solid rgba(102, 126, 234, 0.1);
+      padding: 20px;
+      min-height: 100px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      transition: all 0.3s ease;
     }
+
+    #summary:hover {
+      border-color: rgba(102, 126, 234, 0.2);
+      box-shadow: 
+        0 8px 15px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    #summary p {
+      margin: 0 0 12px 0;
+      line-height: 1.6;
+      color: #4a5568;
+    }
+
     #summary p:first-child {
-        margin-top: 0;
+      margin-top: 0;
     }
+
+    #summary p:last-child {
+      margin-bottom: 0;
+    }
+
     #summary ul {
       padding-left: 20px;
-      margin-top: 0;
-      margin-bottom: 0;
+      margin: 0;
     }
+
     #summary li {
-      margin-bottom: 10px; /* Increased space */
-      line-height: 1.5; /* Improved readability */
+      margin-bottom: 12px;
+      line-height: 1.6;
+      color: #4a5568;
     }
+
     #summary li:last-child {
       margin-bottom: 0;
+    }
+
+    /* Subtle animations for content */
+    .content-wrapper > * {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .content-wrapper > *:nth-child(1) { animation-delay: 0.1s; }
+    .content-wrapper > *:nth-child(2) { animation-delay: 0.2s; }
+    .content-wrapper > *:nth-child(3) { animation-delay: 0.3s; }
+    .content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Wrap content to sit above the animated border -->
   <div class="content-wrapper">
     <h3>Quick Read</h3>
 
