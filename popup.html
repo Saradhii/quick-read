@@ -8,6 +8,13 @@
       width: 300px;
       padding: 10px;
     }
+    #loader {
+      display: none; /* Hidden by default */
+      padding: 10px;
+      text-align: center;
+      font-style: italic;
+      color: #555;
+    }
     #summary {
       margin-top: 10px;
       border: 1px solid #ccc;
@@ -22,6 +29,7 @@
 <body>
   <h3>Web Page Summarizer</h3>
   <button id="summarizeButton">Summarize Page</button>
+  <div id="loader">Summarizing with AI...</div>
   <div id="summary">
     <p>Click the button to summarize the current page.</p>
   </div>
