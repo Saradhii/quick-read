@@ -9,81 +9,21 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      width: 320px;
-      padding: 0;
+      width: 300px;
+      height: 400px;
+      padding: 16px;
       margin: 0;
-      position: relative;
-      overflow: hidden;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 350px;
+      color: #333;
     }
 
-    /* Magical Beaming Border Animation */
-    body::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      z-index: -1;
-      background: linear-gradient(
-        45deg,
-        #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd
-      );
-      background-size: 400% 400%;
-      animation: magicalBeam 4s ease-in-out infinite;
-      border-radius: 16px;
-      filter: blur(1px);
-    }
-
-    /* Secondary glow effect */
-    body::after {
-      content: '';
-      position: absolute;
-      top: -4px;
-      left: -4px;
-      right: -4px;
-      bottom: -4px;
-      z-index: -2;
-      background: linear-gradient(
-        -45deg,
-        #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd
-      );
-      background-size: 400% 400%;
-      animation: magicalBeam 4s ease-in-out infinite reverse;
-      border-radius: 18px;
-      filter: blur(3px);
-      opacity: 0.7;
-    }
-
-    @keyframes magicalBeam {
-      0%, 100% {
-        background-position: 0% 50%;
-      }
-      25% {
-        background-position: 100% 0%;
-      }
-      50% {
-        background-position: 100% 100%;
-      }
-      75% {
-        background-position: 0% 100%;
-      }
-    }
-
-    /* Content wrapper with glassmorphism effect */
-    .content-wrapper {
-      padding: 20px;
+    .container {
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      border-radius: 14px;
-      position: relative;
-      z-index: 1;
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
       height: 100%;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
@@ -93,99 +33,29 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-align: center;
-      margin: 0 0 24px 0;
-      font-size: 20px;
+      margin: 0 0 20px 0;
+      font-size: 18px;
       font-weight: 700;
-      letter-spacing: -0.5px;
     }
 
     #controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      gap: 16px;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
-    /* Modern gradient button with hover effects */
-    button#summarizeButton {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-      background-size: 200% 200%;
-      color: white;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 
-        0 4px 15px rgba(102, 126, 234, 0.4),
-        0 2px 4px rgba(0, 0, 0, 0.1);
-      position: relative;
-      overflow: hidden;
-      letter-spacing: 0.5px;
-    }
-
-    /* Button shine effect */
-    button#summarizeButton::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-      );
-      transition: left 0.5s;
-    }
-
-    button#summarizeButton:hover {
-      background-position: right center;
-      transform: translateY(-2px);
-      box-shadow: 
-        0 8px 25px rgba(102, 126, 234, 0.6),
-        0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    button#summarizeButton:hover::before {
-      left: 100%;
-    }
-
-    button#summarizeButton:active {
-      transform: translateY(0);
-    }
-
-    button#summarizeButton:disabled {
-      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      color: #a0aec0;
-    }
-
-    button#summarizeButton:disabled::before {
-      display: none;
-    }
-
-    /* Modern select dropdown */
     select#summaryLength {
-      padding: 12px 16px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
       border: 2px solid rgba(102, 126, 234, 0.2);
       font-size: 14px;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
+      background: white;
       color: #4a5568;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.3s ease;
       outline: none;
-      min-width: 160px;
     }
 
     select#summaryLength:focus {
@@ -193,34 +63,57 @@
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    select#summaryLength:hover {
-      border-color: rgba(102, 126, 234, 0.4);
+    button#summarizeButton {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
 
-    /* Animated loader with gradient */
+    button#summarizeButton:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button#summarizeButton:active {
+      transform: translateY(0);
+    }
+
+    button#summarizeButton:disabled {
+      background: #e2e8f0;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      color: #a0aec0;
+    }
+
     #loader {
       display: none;
-      padding: 20px;
+      padding: 16px;
       text-align: center;
       color: #667eea;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-      border-radius: 12px;
-      margin-bottom: 20px;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 8px;
+      margin-bottom: 16px;
       border: 1px solid rgba(102, 126, 234, 0.2);
-      position: relative;
-      overflow: hidden;
     }
 
     .loader-content {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .spinner {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border: 2px solid rgba(102, 126, 234, 0.3);
       border-top: 2px solid #667eea;
       border-radius: 50%;
@@ -229,12 +122,12 @@
 
     .dots {
       display: flex;
-      gap: 4px;
+      gap: 3px;
     }
 
     .dot {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
       background: #667eea;
       border-radius: 50%;
       animation: bounce 1.4s ease-in-out infinite both;
@@ -260,52 +153,25 @@
       }
     }
 
-    #loader::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(102, 126, 234, 0.2),
-        transparent
-      );
-      animation: loaderShine 2s infinite;
-    }
-
-    /* Modern summary container */
     #summary {
-      margin-top: 16px;
       border: 2px solid rgba(102, 126, 234, 0.1);
-      padding: 20px;
-      min-height: 100px;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      box-shadow: 
-        0 4px 6px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      padding: 16px;
+      min-height: 120px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       transition: all 0.3s ease;
     }
 
     #summary:hover {
       border-color: rgba(102, 126, 234, 0.2);
-      box-shadow: 
-        0 8px 15px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
     #summary p {
-      margin: 0 0 12px 0;
-      line-height: 1.6;
+      margin: 0 0 10px 0;
+      line-height: 1.5;
       color: #4a5568;
-    }
-
-    #summary p:first-child {
-      margin-top: 0;
+      font-size: 14px;
     }
 
     #summary p:last-child {
@@ -313,42 +179,24 @@
     }
 
     #summary ul {
-      padding-left: 20px;
+      padding-left: 16px;
       margin: 0;
     }
 
     #summary li {
-      margin-bottom: 12px;
-      line-height: 1.6;
+      margin-bottom: 8px;
+      line-height: 1.5;
       color: #4a5568;
+      font-size: 14px;
     }
 
     #summary li:last-child {
       margin-bottom: 0;
     }
-
-    /* Subtle animations for content */
-    .content-wrapper > * {
-      animation: fadeInUp 0.6s ease-out forwards;
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    .content-wrapper > *:nth-child(1) { animation-delay: 0.1s; }
-    .content-wrapper > *:nth-child(2) { animation-delay: 0.2s; }
-    .content-wrapper > *:nth-child(3) { animation-delay: 0.3s; }
-    .content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="content-wrapper">
+  <div class="container">
     <h3>Quick Read</h3>
 
     <div id="controls">
@@ -362,7 +210,7 @@
     <div id="loader">
       <div class="loader-content">
         <div class="spinner"></div>
-        <span>Analyzing content...</span>
+        <span>Analyzing content</span>
         <div class="dots">
           <div class="dot"></div>
           <div class="dot"></div>
