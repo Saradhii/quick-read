@@ -1,5 +1,5 @@
 // IMPORTANT: REPLACE 'YOUR_API_KEY' WITH YOUR ACTUAL GEMINI API KEY
-const GEMINI_API_KEY = 'AIzaSyBoWVLiSCXKk69y6LbmN1UvY0suBI1l2Tg'; // Or your actual key if already set by user
+const GEMINI_API_KEY = 'AIzaSyAvn9kp9Ht7Hp6vL0q3hiH15qxOuIXK2eg'; // Or your actual key if already set by user
 const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 // Updated function signature to accept pageDetails object
