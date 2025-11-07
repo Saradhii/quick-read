@@ -83,16 +83,6 @@ export interface ReadabilityArticle {
   lang: string;
 }
 
-export interface MarkdownItOptions {
-  html?: boolean;
-  linkify?: boolean;
-  typographer?: boolean;
-}
-
-export interface MarkdownIt {
-  render: (text: string) => string;
-}
-
 export interface ChromeTab extends chrome.tabs.Tab {
   id: number;
 }

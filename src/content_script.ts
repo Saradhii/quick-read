@@ -1,9 +1,4 @@
-/// <reference path="./global.d.ts" />
-import type { PageDetails, PageContentError } from './types';
-
-if (typeof Readability === 'undefined') {
-  console.error("Readability.js not loaded before content_script.js");
-}
+import type { PageDetails, PageContentError, ReadabilityArticle } from './types';
 
 interface GetPageContentMessageCandidate {
   action?: string;
@@ -17,76 +12,248 @@ const isGetPageContentMessage = (
   message.action === 'getPageContent'
 );
 
+class ReadabilityExtractor {
+  private static readonly preferredSelectors: readonly string[] = [
+    'article',
+    'main',
+    'section[role="main"]',
+    'div[role="main"]',
+    'div[data-article-body]',
+    '.article',
+    '.article-content',
+    '.post-content',
+    '.entry-content'
+  ];
+
+  private static readonly fallbackSelector = [
+    'article',
+    'main',
+    'section',
+    'div[role="main"]',
+    'div.article',
+    'div.post',
+    'div.post-content',
+    'div.entry-content'
+  ].join(', ');
+
+  private static readonly blocklistSelector = [
+    'script',
+    'style',
+    'noscript',
+    'iframe',
+    'object',
+    'embed',
+    'form',
+    'nav',
+    'footer',
+    'header',
+    'aside',
+    'svg',
+    'canvas',
+    '[aria-hidden="true"]'
+  ].join(', ');
+
+  private static readonly minimumPrimaryTextLength = 400;
+
+  private readonly doc: Document;
+
+  constructor(doc: Document) {
+    this.doc = doc;
+  }
+
+  parse(): ReadabilityArticle | null {
+    const mainElement = this.findMainElement();
+    if (!mainElement) {
+      return null;
+    }
+
+    const wrapper = this.doc.createElement('div');
+    const mainClone = mainElement.cloneNode(true);
+    wrapper.appendChild(mainClone);
+
+    this.removeUnwantedNodes(wrapper);
+
+    const textContent = this.extractText(wrapper).trim();
+    if (textContent.length === 0) {
+      return null;
+    }
+
+    return {
+      title: this.getTitle(),
+      content: wrapper.innerHTML,
+      textContent,
+      length: textContent.length,
+      excerpt: ReadabilityExtractor.buildExcerpt(textContent),
+      byline: this.getByline(),
+      dir: this.getDirection(),
+      siteName: this.getSiteName(),
+      lang: this.getLanguage()
+    };
+  }
+
+  extractFallbackText(): string {
+    const wrapper = this.doc.createElement('div');
+    wrapper.appendChild(this.doc.body.cloneNode(true));
+    this.removeUnwantedNodes(wrapper);
+    return this.extractText(wrapper).trim() || (this.doc.body.textContent?.trim() ?? '');
+  }
+
+  getTitle(): string {
+    return this.doc.title || '';
+  }
+
+  getByline(): string {
+    const authorMeta = this.doc.querySelector('meta[name="author"], meta[property="article:author"]');
+    if (authorMeta instanceof HTMLMetaElement && authorMeta.content) {
+      return authorMeta.content.trim();
+    }
+
+    const relAuthor = this.doc.querySelector('[rel="author"], [itemprop="author"], [class*="author"]');
+    if (relAuthor instanceof HTMLElement) {
+      return relAuthor.textContent?.trim() ?? '';
+    }
+
+    return '';
+  }
+
+  getSiteName(): string {
+    const siteNameMeta = this.doc.querySelector('meta[property="og:site_name"], meta[name="application-name"]');
+    if (siteNameMeta instanceof HTMLMetaElement && siteNameMeta.content) {
+      return siteNameMeta.content.trim();
+    }
+
+    try {
+      const url = new URL(this.doc.URL);
+      return url.hostname;
+    } catch (_error) {
+      return window.location.hostname;
+    }
+  }
+
+  getLanguage(): string {
+    return this.doc.documentElement.lang || '';
+  }
+
+  getDirection(): string {
+    return this.doc.dir || this.doc.documentElement.dir || 'ltr';
+  }
+
+  static getPageDescription(doc: Document): string {
+    const meta = doc.querySelector(
+      'meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]'
+    );
+    if (meta instanceof HTMLMetaElement && meta.content) {
+      return meta.content.trim();
+    }
+    return '';
+  }
+
+  private findMainElement(): Element | null {
+    for (const selector of ReadabilityExtractor.preferredSelectors) {
+      const candidate = this.doc.querySelector(selector);
+      if (candidate instanceof HTMLElement) {
+        const textLength = this.extractText(candidate).trim().length;
+        if (textLength >= ReadabilityExtractor.minimumPrimaryTextLength) {
+          return candidate;
+        }
+      }
+    }
+
+    const fallbackCandidates = Array.from(this.doc.querySelectorAll(ReadabilityExtractor.fallbackSelector));
+    let bestCandidate: Element | null = null;
+    let bestScore = 0;
+
+    fallbackCandidates.forEach(candidate => {
+      if (candidate instanceof HTMLElement) {
+        const textLength = this.extractText(candidate).trim().length;
+        if (textLength > bestScore) {
+          bestScore = textLength;
+          bestCandidate = candidate;
+        }
+      }
+    });
+
+    if (bestCandidate && bestScore >= ReadabilityExtractor.minimumPrimaryTextLength / 2) {
+      return bestCandidate;
+    }
+
+    return this.doc.body;
+  }
+
+  private removeUnwantedNodes(root: Element): void {
+    const removableNodes = root.querySelectorAll(ReadabilityExtractor.blocklistSelector);
+    removableNodes.forEach(node => {
+      node.remove();
+    });
+
+    root.querySelectorAll('[style]').forEach(element => {
+      if (element instanceof HTMLElement) {
+        element.removeAttribute('style');
+      }
+    });
+  }
+
+  private extractText(root: Element): string {
+    const segments: string[] = [];
+    const textNodes = root.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote');
+    textNodes.forEach(node => {
+      const text = node.textContent?.trim();
+      if (text) {
+        segments.push(text);
+      }
+    });
+
+    if (segments.length > 0) {
+      return segments.join('\n');
+    }
+
+    return root.textContent?.trim() ?? '';
+  }
+
+  private static buildExcerpt(text: string): string {
+    const normalized = text.replace(/\s+/g, ' ').trim();
+    if (normalized.length <= 200) {
+      return normalized;
+    }
+
+    const truncated = normalized.slice(0, 200);
+    const lastSentenceBreak = Math.max(truncated.lastIndexOf('.'), truncated.lastIndexOf('!'), truncated.lastIndexOf('?'));
+    if (lastSentenceBreak > 120) {
+      return `${truncated.slice(0, lastSentenceBreak + 1)}…`;
+    }
+
+    return `${truncated}…`;
+  }
+}
+
 chrome.runtime.onMessage.addListener((request: GetPageContentMessageCandidate | null, _sender: chrome.runtime.MessageSender, sendResponse: (response: PageDetails | PageContentError) => void) => {
   if (!isGetPageContentMessage(request)) {
-    sendResponse({ error: "Invalid request format." });
+    sendResponse({ error: 'Invalid request format.' });
     return false;
   }
 
-  if (request.action === "getPageContent") {
-    try {
-      const documentClone = document.cloneNode(true) as Document;
-      const article = new Readability(documentClone).parse();
+  try {
+    const extractor = new ReadabilityExtractor(document);
+    const article = extractor.parse();
+    const articleText = (article?.textContent ?? extractor.extractFallbackText()).trim();
 
-      let articleText = '';
-      if (article?.textContent) {
-        articleText = article.textContent;
-      } else {
-        console.warn("Readability could not parse the article effectively, falling back to simple text extraction.");
-        let content = '';
-        const mainContentSelectors = ['article', 'main', 'div[role="main"]', 'div.post-content', 'div.entry-content'];
-        let mainEl: Element | null = null;
-        for (const selector of mainContentSelectors) {
-          mainEl = document.querySelector(selector);
-          if (mainEl) break;
-        }
-        if (!mainEl) mainEl = document.body;
-        const textElements = mainEl.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
-        textElements.forEach(el => { 
-          if (el instanceof HTMLElement) {
-            content += el.innerText + '\n';
-          }
-        });
-        articleText = content.trim() || document.body.innerText;
-      }
-
-      const pageTitle = document.title || "";
-
-      let siteName = "";
-      const siteNameMeta = document.querySelector('meta[property="og:site_name"]');
-      if (siteNameMeta instanceof HTMLMetaElement && siteNameMeta.content) {
-        siteName = siteNameMeta.content;
-      } else {
-        siteName = window.location.hostname;
-      }
-
-      let pageDescription = "";
-      const descriptionMeta = document.querySelector('meta[name="description"]');
-      const ogDescriptionMeta = document.querySelector('meta[property="og:description"]');
-      if (descriptionMeta instanceof HTMLMetaElement && descriptionMeta.content) {
-        pageDescription = descriptionMeta.content;
-      } else if (ogDescriptionMeta instanceof HTMLMetaElement && ogDescriptionMeta.content) {
-        pageDescription = ogDescriptionMeta.content;
-      }
-
-      if (articleText && articleText.trim().length > 0) {
-        sendResponse({
-          articleText: articleText.trim(),
-          pageTitle: pageTitle.trim(),
-          siteName: siteName.trim(),
-          pageDescription: pageDescription.trim()
-        });
-      } else {
-        sendResponse({ error: "Could not extract meaningful text content using Readability." });
-      }
-
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-      console.error("Error in content_script during Readability processing:", e);
-      sendResponse({ error: `Error extracting content with Readability: ${errorMessage}` });
+    if (articleText.length === 0) {
+      sendResponse({ error: 'Could not extract meaningful text content from this page.' });
+      return true;
     }
-    return true;
+
+    const pageDetails: PageDetails = {
+      articleText,
+      pageTitle: (article?.title ?? extractor.getTitle()).trim(),
+      siteName: (article?.siteName ?? extractor.getSiteName()).trim(),
+      pageDescription: ReadabilityExtractor.getPageDescription(document)
+    };
+
+    sendResponse(pageDetails);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    sendResponse({ error: `Error extracting content: ${message}` });
   }
 
-  return false;
+  return true;
 });
