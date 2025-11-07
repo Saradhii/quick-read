@@ -12,6 +12,7 @@ This Chrome extension, Quick Read, allows users to quickly summarize web pages. 
 *   **Loading Indicator:** Shows "Summarizing with AI..." during processing.
 
 ## Technical Details / Libraries Used
+*   **Language:** TypeScript (compiled to JavaScript)
 *   **Content Extraction:** Mozilla's `Readability.js` (`lib/Readability.js`)
 *   **Markdown Rendering:** `markdown-it` (`lib/markdown-it.min.js`)
 *   **AI Model:** Google Gemini (via API, model `gemini-1.5-flash-latest`)
@@ -26,16 +27,17 @@ This Chrome extension, Quick Read, allows users to quickly summarize web pages. 
     *   Create a new project or select an existing one.
     *   Navigate to the API key section (often "Get API key" or similar) and generate a new API key. Ensure the Gemini API (or "Generative Language API") is enabled for this key/project.
 2.  **Add the API Key to the Extension:**
-    *   Once you have the extension files on your local machine, open the `background.js` file in a text editor.
+    *   Once you have the extension files on your local machine, open the `src/background.ts` file in a text editor.
     *   Near the top of the file, you will find the following line:
-        ```javascript
-        const GEMINI_API_KEY = 'YOUR_API_KEY_GOES_HERE';
+        ```typescript
+        const GEMINI_API_KEY: string = 'YOUR_API_KEY';
         ```
-    *   Replace the placeholder text `'YOUR_API_KEY_GOES_HERE'` with your actual Gemini API key. For example, if your key is `AbCdEf12345`, the line should look like:
-        ```javascript
-        const GEMINI_API_KEY = 'AbCdEf12345';
+    *   Replace the placeholder text `'YOUR_API_KEY'` with your actual Gemini API key. For example, if your key is `AbCdEf12345`, the line should look like:
+        ```typescript
+        const GEMINI_API_KEY: string = 'AbCdEf12345';
         ```
-    *   Save the `background.js` file.
+    *   Save the file and run `npm run build` to generate the compiled JavaScript in the `dist/` directory.
+    *   The background service worker consumes the compiled `dist/background.js` file.
 
 Without a valid API key, the summarization will fail.
 
@@ -44,21 +46,23 @@ Without a valid API key, the summarization will fail.
 Since this extension is not yet on the Chrome Web Store, you can load it as an unpacked extension:
 
 1.  **Download or Clone:** Get the extension files onto your local machine.
-2.  **Add API Key:** Follow the instructions in the "Setting Up Gemini API Key" section above.
-3.  **Open Chrome Extensions Page:**
+2.  **Install Dependencies:** Run `npm install` to install TypeScript and required type definitions.
+3.  **Build the Extension:** Run `npm run build` to compile TypeScript files to the `dist/` directory.
+4.  **Add API Key:** Follow the instructions in the "Setting Up Gemini API Key" section above.
+5.  **Open Chrome Extensions Page:**
     *   Open Google Chrome.
     *   Type `chrome://extensions` in the address bar and press Enter.
-4.  **Enable Developer Mode:**
+6.  **Enable Developer Mode:**
     *   In the top right corner of the Extensions page, toggle the "Developer mode" switch to the **on** position.
-5.  **Load Unpacked:**
+7.  **Load Unpacked:**
     *   Click the "Load unpacked" button that appears.
     *   Navigate to the directory where you saved/extracted the extension files (the one containing `manifest.json`).
     *   Click "Select Folder".
-6.  **Extension Ready:** The Quick Read extension should now appear in your list.
+8.  **Extension Ready:** The Quick Read extension should now appear in your list.
 
 ## How to Use
 
-1.  Ensure you have added your Gemini API key to `background.js`.
+1.  Ensure you have added your Gemini API key to `src/background.ts` and rebuilt the project.
 2.  Navigate to any web page you want to summarize.
 3.  Click on the Quick Read extension icon in your Chrome toolbar.
 4.  In the popup that appears, select your desired summary length (e.g., "Concise Summary" or "Detailed Summary") from the dropdown menu.
@@ -68,16 +72,16 @@ Since this extension is not yet on the Chrome Web Store, you can load it as an u
 
 ## How Summarization Works
 
-1.  **Advanced Content Extraction (`content_script.js`):**
+1.  **Advanced Content Extraction (`content_script.ts`):**
     *   When you click "Summarize Page", the extension injects scripts into the current webpage.
     *   **Mozilla's Readability.js** is used to parse the page and extract the main article content, removing ads, navigation, and other non-essential elements.
     *   Key **metadata** is also extracted: the page title, site name (from meta tags or hostname), and page description (from meta tags).
-2.  **Sending to Background (`popup.js` -> `background.js`):**
+2.  **Sending to Background (`popup.ts` -> `background.ts`):**
     *   The cleaned article text and the collected metadata are sent to the background script.
-3.  **AI Summarization with Context (`background.js`):**
+3.  **AI Summarization with Context (`background.ts`):**
     *   The background script constructs a detailed prompt for the Google Gemini API. This prompt includes the extracted article text, page title, site name, and page description to give the AI better context.
     *   The AI is instructed to generate a summary in **Markdown format**, tailored to the user's selected length preference ("Concise" or "Detailed").
-4.  **Displaying Markdown Summary (`popup.js`):**
+4.  **Displaying Markdown Summary (`popup.ts`):**
     *   The Markdown summary from the Gemini API is sent to the popup.
     *   The `markdown-it` library is used within the popup to convert this Markdown text into richly formatted HTML.
     *   This HTML is then displayed in the summary area, showing headings, lists, bold/italic text, etc., as generated by the AI.
