@@ -1,0 +1,32 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if npm is added later)
+node_modules/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package files
+*.crx
+*.pem
+*.zip
+
+# API Keys (reminder to users)
+# Remember to never commit your actual API key in background.js
