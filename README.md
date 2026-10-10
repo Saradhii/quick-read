@@ -4,7 +4,7 @@
 This Chrome extension, Quick Read, allows users to quickly summarize web pages. It intelligently extracts the main article content, gathers contextual metadata (like page title and site name), and then uses the Gemini AI model to generate a summary. Summaries are presented in a clean, readable Markdown format directly in the popup. Users can choose their desired summary length and enjoy a modern, styled interface.
 
 ## Features
-*   **Advanced Content Extraction:** Uses Mozilla's Readability.js to accurately extract the main article text, stripping away clutter.
+*   **Advanced Content Extraction:** Uses a built-in extraction engine (inspired by Readability) to accurately extract the main article text, stripping away clutter.
 *   **Context-Aware AI Summarization:** Provides page metadata (title, site name, description) to the Gemini model for more relevant summaries.
 *   **Markdown Summaries:** Displays summaries in rich Markdown format (headings, lists, bold, etc.) for better readability.
 *   **Customizable Summary Length:** Choose between "Concise Summary" or "Detailed Summary".
@@ -12,9 +12,9 @@ This Chrome extension, Quick Read, allows users to quickly summarize web pages. 
 *   **Loading Indicator:** Shows "Summarizing with AI..." during processing.
 
 ## Technical Details / Libraries Used
-*   **Language:** TypeScript (compiled to JavaScript)
-*   **Content Extraction:** Mozilla's `Readability.js` (`lib/Readability.js`)
-*   **Markdown Rendering:** `markdown-it` (`lib/markdown-it.min.js`)
+*   **Language:** 100% TypeScript, bundled with esbuild (no JavaScript source in the repo)
+*   **Content Extraction:** Built-in, fully typed `ReadabilityExtractor` (`src/content_script.ts`)
+*   **Markdown Rendering:** `markdown-it` (npm package, bundled into `dist/popup.js`)
 *   **AI Model:** Google Gemini (via API, model `gemini-1.5-flash-latest`)
 
 ## Setting Up Gemini API Key
@@ -46,7 +46,7 @@ Without a valid API key, the summarization will fail.
 Since this extension is not yet on the Chrome Web Store, you can load it as an unpacked extension:
 
 1.  **Download or Clone:** Get the extension files onto your local machine.
-2.  **Install Dependencies:** Run `npm install` to install TypeScript and required type definitions.
+2.  **Install Dependencies:** Run `npm install` to install the build tooling (TypeScript, esbuild) and the `markdown-it` library.
 3.  **Build the Extension:** Run `npm run build` to compile TypeScript files to the `dist/` directory.
 4.  **Add API Key:** Follow the instructions in the "Setting Up Gemini API Key" section above.
 5.  **Open Chrome Extensions Page:**
@@ -74,7 +74,7 @@ Since this extension is not yet on the Chrome Web Store, you can load it as an u
 
 1.  **Advanced Content Extraction (`content_script.ts`):**
     *   When you click "Summarize Page", the extension injects scripts into the current webpage.
-    *   **Mozilla's Readability.js** is used to parse the page and extract the main article content, removing ads, navigation, and other non-essential elements.
+    *   The extension's built-in, fully typed extraction logic parses the page and extracts the main article content, removing ads, navigation, and other non-essential elements.
     *   Key **metadata** is also extracted: the page title, site name (from meta tags or hostname), and page description (from meta tags).
 2.  **Sending to Background (`popup.ts` -> `background.ts`):**
     *   The cleaned article text and the collected metadata are sent to the background script.

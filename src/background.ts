@@ -159,7 +159,7 @@ chrome.runtime.onMessage.addListener((request: SummarizePageMessage | SummarizeP
 
   chrome.scripting.executeScript({
     target: { tabId },
-    files: ['lib/Readability.js', 'dist/content_script.js']
+    files: ['dist/content_script.js']
   }, (injectionResults: chrome.scripting.InjectionResult[] | undefined) => {
     if (chrome.runtime.lastError || !injectionResults || injectionResults.length === 0) {
       const errorMessage = chrome.runtime.lastError ? chrome.runtime.lastError.message : "No results returned.";

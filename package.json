@@ -1,13 +1,10 @@
 {
-  "name": "project",
+  "name": "quick-read",
   "version": "1.0.0",
   "description": "This Chrome extension, Quick Read, allows users to quickly summarize web pages. It intelligently extracts the main article content, gathers contextual metadata (like page title and site name), and then uses the Gemini AI model to generate a summary. Summaries are presented in a clean, readable Markdown format directly in the popup. Users can choose their desired summary length and enjoy a modern, styled interface.",
-  "main": "background.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
-    "build": "tsc --project tsconfig.json"
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && esbuild src/popup.ts src/background.ts src/content_script.ts --bundle --format=iife --target=es2020 --outdir=dist"
   },
   "repository": {
     "type": "git",
@@ -24,6 +21,10 @@
   "devDependencies": {
     "@types/chrome": "^0.1.27",
     "@types/markdown-it": "^14.1.2",
+    "esbuild": "^0.28.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "markdown-it": "^14.3.2"
   }
 }
