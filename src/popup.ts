@@ -1,5 +1,5 @@
-/// <reference path="./global.d.ts" />
-import type { SummaryResult, SummarySuccess, SummaryError, LengthPreference, MarkdownIt } from './types';
+import MarkdownIt from 'markdown-it';
+import type { SummaryResult, SummarySuccess, SummaryError, LengthPreference } from './types';
 
 function isSummarySuccess(result: SummaryResult): result is SummarySuccess {
   return typeof result === 'object' && result !== null && 'summary' in result;
@@ -30,17 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
     throw new Error('Summary length select element not found.');
   }
 
-  let mdRenderer: MarkdownIt | { render: (text: string) => string };
-  if (typeof window.markdownit === 'function') {
-    mdRenderer = window.markdownit({
-      html: false,
-      linkify: true,
-      typographer: true
-    });
-  } else {
-    console.error('markdown-it not loaded! Summaries will be plain text.');
-    mdRenderer = { render: (text: string) => text };
-  }
+  const createMarkdownRenderer = (): { render: (text: string) => string } => {
+    try {
+      return new MarkdownIt({
+        html: false,
+        linkify: true,
+        typographer: true
+      });
+    } catch (error) {
+      console.error('markdown-it failed to initialize; summaries will be plain text.', error);
+      return { render: (text: string) => text };
+    }
+  };
+
+  const mdRenderer = createMarkdownRenderer();
 
   const setLoadingState = (isLoading: boolean) => {
     loaderDivElement.style.display = isLoading ? 'block' : 'none';
